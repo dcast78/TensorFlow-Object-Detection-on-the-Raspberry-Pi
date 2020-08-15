@@ -28,6 +28,11 @@ import tensorflow as tf
 import argparse
 import sys
 
+# Import for telegram bot
+import time
+import telepot
+from telepot.loop import MessageLoop
+
 # Set up camera constants
 IM_WIDTH = 1280
 IM_HEIGHT = 720
@@ -40,6 +45,8 @@ camera_type = 'picamera'
 parser = argparse.ArgumentParser()
 parser.add_argument('--usbcam', help='Use a USB webcam instead of picamera',
                     action='store_true')
+parser.add_argument('--chatid', help='Chatid for Telegram bot')
+parser.add_argument('--token', help='Token foe Telegram bot')
 args = parser.parse_args()
 if args.usbcam:
     camera_type = 'usb'
@@ -66,6 +73,9 @@ PATH_TO_LABELS = os.path.join(CWD_PATH,'data','mscoco_label_map.pbtxt')
 
 # Number of classes the object detector can identify
 NUM_CLASSES = 90
+
+# Acceptable score for object detection
+MIN_SCORE_THRESH=0.40
 
 ## Load the label map.
 # Label maps map indices to category names, so that when the convolution
@@ -152,12 +162,28 @@ if camera_type == 'picamera':
             category_index,
             use_normalized_coordinates=True,
             line_thickness=8,
-            min_score_thresh=0.40)
+            min_score_thresh=MIN_SCORE_THRESH)
+
+        #Scan score to find detected element in categories with minimal value thresh
+        score_index=0
+        for scorey in scores:
+            for scorex in scorey:
+                score_index=score_index+1
+                if scorex > MIN_SCORE_THRESH :
+                     #print(score_index)
+                     id=int(classes[0][0])
+                     print(id)
+                     print( "cat: " + str(categories[id-1]['name']) + " score: "+ str(scorex))
 
         cv2.putText(frame,"FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
 
         # All the results have been drawn on the frame, so it's time to display it.
         #cv2.imshow('Object detector', frame)
+        if id != 1024:
+            cv2.imwrite('/tmp/detected_image.png',frame)  
+            print ("File save")
+            id=1024
+            #print( "cat: " + str(categories[id-1]['name']) + " score: "+ str(scorex))
 
         t2 = cv2.getTickCount()
         time1 = (t2-t1)/freq
@@ -204,18 +230,34 @@ elif camera_type == 'usb':
             line_thickness=8,
             min_score_thresh=0.85)
 
+        #Scan score to find detected element in categories with minimal value thresh
+        score_index=0
+        for scorey in scores:
+            for scorex in scorey:
+                score_index=score_index+1
+                if scorex > MIN_SCORE_THRESH :
+                     #print(score_index)
+                     id=int(classes[0][0])
+                     print(id)
+                     print( "cat: " + str(categories[id-1]['name']) + " score: "+ str(scorex))
+
         cv2.putText(frame,"FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
         
         # All the results have been drawn on the frame, so it's time to display it.
-        cv2.imshow('Object detector', frame)
+        #cv2.imshow('Object detector', frame)
+        if id != 1024:
+            cv2.imwrite('/tmp/detected_image.png',frame)  
+            print ("File save")
+            id=1024
+
 
         t2 = cv2.getTickCount()
         time1 = (t2-t1)/freq
         frame_rate_calc = 1/time1
 
         # Press 'q' to quit
-        if cv2.waitKey(1) == ord('q'):
-            break
+        #if cv2.waitKey(1) == ord('q'):
+        #    break
 
     camera.release()
 
