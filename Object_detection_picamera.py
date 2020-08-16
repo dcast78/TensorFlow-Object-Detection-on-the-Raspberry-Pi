@@ -237,21 +237,29 @@ elif camera_type == 'usb':
             line_thickness=8,
             min_score_thresh=MIN_SCORE_THRESH)
 
-
         #Scan score to find detected element in categories with minimal value thresh
         score_index=0
+        #Filter np array with condition > MIN_SCORE_THRESH
+        found=np.where(scores[0]>MIN_SCORE_THRESH)
+        #Count elements filtered
+        found_cnt=(len(found[0]))
+        info="Detected objects: " + str(found_cnt)
+        count=0
+
         for scorey in scores:
             for scorex in scorey:
                 score_index=score_index+1
                 if scorex > MIN_SCORE_THRESH :
                      #print(score_index)
-                     id=int(classes[0][0])
+                     id=int(classes[0][count])
+                     count=count+1
                      #print(id)
-                     info= "Detected! Category: " + str(category_index.get(id)) + " Score: "+ str(scorex)
-                     print(info)
+                     info= info + " Category: " + str(category_index.get(id)) + " Score: "+ str(scorex)
 
+        #Print summary of detections in thi frame
+        print(info)
         cv2.putText(frame,"FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
-        
+
         # All the results have been drawn on the frame, so it's time to display it.
         #cv2.imshow('Object detector', frame)
         if id != 1024:
@@ -259,6 +267,7 @@ elif camera_type == 'usb':
             id=1024
             #print( "cat: " + str(categories[id-1]['name']) + " score: "+ str(scorex))
             os.system('/usr/local/bin/telegram-send --image /tmp/detected_image.jpg --caption "' + info + '"')
+            info=""
 
         t2 = cv2.getTickCount()
         time1 = (t2-t1)/freq
@@ -267,6 +276,7 @@ elif camera_type == 'usb':
         # Press 'q' to quit
         #if cv2.waitKey(1) == ord('q'):
         #    break
+
 
     camera.release()
 
