@@ -28,11 +28,6 @@ import tensorflow as tf
 import argparse
 import sys
 
-# Import for telegram bot
-import time
-import telepot
-from telepot.loop import MessageLoop
-
 # Set up camera constants
 IM_WIDTH = 1280
 IM_HEIGHT = 720
