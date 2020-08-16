@@ -45,8 +45,6 @@ camera_type = 'picamera'
 parser = argparse.ArgumentParser()
 parser.add_argument('--usbcam', help='Use a USB webcam instead of picamera',
                     action='store_true')
-parser.add_argument('--chatid', help='Chatid for Telegram bot')
-parser.add_argument('--token', help='Token foe Telegram bot')
 args = parser.parse_args()
 if args.usbcam:
     camera_type = 'usb'
@@ -76,6 +74,9 @@ NUM_CLASSES = 90
 
 # Acceptable score for object detection
 MIN_SCORE_THRESH=0.40
+
+id=1024
+info="Telegram bot"
 
 ## Load the label map.
 # Label maps map indices to category names, so that when the convolution
@@ -172,18 +173,19 @@ if camera_type == 'picamera':
                 if scorex > MIN_SCORE_THRESH :
                      #print(score_index)
                      id=int(classes[0][0])
-                     print(id)
-                     print( "cat: " + str(categories[id-1]['name']) + " score: "+ str(scorex))
+                     #print(id)
+                     info= "Detected! Category: " + str(category_index.get(id)) + " Score: "+ str(scorex)
+                     print(info)
 
         cv2.putText(frame,"FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
 
         # All the results have been drawn on the frame, so it's time to display it.
         #cv2.imshow('Object detector', frame)
         if id != 1024:
-            cv2.imwrite('/tmp/detected_image.png',frame)  
-            print ("File save")
+            cv2.imwrite('/tmp/detected_image.jpg',frame)  
             id=1024
             #print( "cat: " + str(categories[id-1]['name']) + " score: "+ str(scorex))
+            os.system('/usr/local/bin/telegram-send --image /tmp/detected_image.jpg --caption "' + info + '"')
 
         t2 = cv2.getTickCount()
         time1 = (t2-t1)/freq
@@ -228,7 +230,8 @@ elif camera_type == 'usb':
             category_index,
             use_normalized_coordinates=True,
             line_thickness=8,
-            min_score_thresh=0.85)
+            min_score_thresh=MIN_SCORE_THRESH)
+
 
         #Scan score to find detected element in categories with minimal value thresh
         score_index=0
@@ -238,18 +241,19 @@ elif camera_type == 'usb':
                 if scorex > MIN_SCORE_THRESH :
                      #print(score_index)
                      id=int(classes[0][0])
-                     print(id)
-                     print( "cat: " + str(categories[id-1]['name']) + " score: "+ str(scorex))
+                     #print(id)
+                     info= "Detected! Category: " + str(category_index.get(id)) + " Score: "+ str(scorex)
+                     print(info)
 
         cv2.putText(frame,"FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
         
         # All the results have been drawn on the frame, so it's time to display it.
         #cv2.imshow('Object detector', frame)
         if id != 1024:
-            cv2.imwrite('/tmp/detected_image.png',frame)  
-            print ("File save")
+            cv2.imwrite('/tmp/detected_image.jpg',frame)  
             id=1024
-
+            #print( "cat: " + str(categories[id-1]['name']) + " score: "+ str(scorex))
+            os.system('/usr/local/bin/telegram-send --image /tmp/detected_image.jpg --caption "' + info + '"')
 
         t2 = cv2.getTickCount()
         time1 = (t2-t1)/freq
