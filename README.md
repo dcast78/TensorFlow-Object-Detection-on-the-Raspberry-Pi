@@ -134,7 +134,15 @@ tar -xzvf ssdlite_mobilenet_v2_coco_2018_05_09.tar.gz
 ```
 Now the model is in the object_detection directory and ready to be used.
 
-### 6. Detect Objects!
+### 6. Install telegram-send
+Used to send images witch telegram bot
+```
+sudo pip3 install telegram-send
+telegram-send --configure
+```
+or follow guide  https://pypi.org/project/telegram-send/
+
+### 7. Detect Objects!
 Okay, now everything is set up for performing object detection on the Pi! The Python script in this repository, Object_detection_picamera.py, detects objects in live feeds from a Picamera or USB webcam. Basically, the script sets paths to the model and label map, loads the model into memory, initializes the Picamera, and then begins performing object detection on each video frame from the Picamera. 
 
 If you’re using a Picamera, make sure it is enabled in the Raspberry Pi configuration menu.
