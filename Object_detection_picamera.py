@@ -68,10 +68,11 @@ PATH_TO_LABELS = os.path.join(CWD_PATH,'data','mscoco_label_map.pbtxt')
 NUM_CLASSES = 90
 
 # Acceptable score for object detection
-MIN_SCORE_THRESH=0.40
+MIN_SCORE_THRESH=0.70
 
 id=1024
 info="Telegram bot"
+object_list_prev=""
 
 ## Load the label map.
 # Label maps map indices to category names, so that when the convolution
@@ -178,6 +179,7 @@ if camera_type == 'picamera':
                      count=count+1
                      #print(id)
                      info= info + " Category: " + str(category_index.get(id)) + " Score: "+ str(scorex)
+                     object_list=str(category_index.get(id))
 
         #Print summary of detections in thi frame
         print(info)
@@ -189,8 +191,10 @@ if camera_type == 'picamera':
             cv2.imwrite('/tmp/detected_image.jpg',frame)  
             id=1024
             #print( "cat: " + str(categories[id-1]['name']) + " score: "+ str(scorex))
-            os.system('/usr/local/bin/telegram-send --image /tmp/detected_image.jpg --caption "' + info + '"')
-            info=""
+            if object_list!= object_list_prev:
+                os.system('/usr/local/bin/telegram-send --image /tmp/detected_image.jpg --caption "' + info + '"')
+                info=""
+                object_list_prev=object_list
 
         t2 = cv2.getTickCount()
         time1 = (t2-t1)/freq
