@@ -68,10 +68,11 @@ PATH_TO_LABELS = os.path.join(CWD_PATH,'data','mscoco_label_map.pbtxt')
 NUM_CLASSES = 90
 
 # Acceptable score for object detection
-MIN_SCORE_THRESH=0.70
+MIN_SCORE_THRESH=0.80
 
 id=1024
 info="Telegram bot"
+object_list=""
 object_list_prev=""
 
 ## Load the label map.
@@ -158,7 +159,7 @@ if camera_type == 'picamera':
             np.squeeze(scores),
             category_index,
             use_normalized_coordinates=True,
-            line_thickness=8,
+            line_thickness=2,
             min_score_thresh=MIN_SCORE_THRESH)
 
         #Scan score to find detected element in categories with minimal value thresh
@@ -187,14 +188,14 @@ if camera_type == 'picamera':
 
         # All the results have been drawn on the frame, so it's time to display it.
         #cv2.imshow('Object detector', frame)
-        if id != 1024:
-            cv2.imwrite('/tmp/detected_image.jpg',frame)  
-            id=1024
-            #print( "cat: " + str(categories[id-1]['name']) + " score: "+ str(scorex))
-            if object_list!= object_list_prev:
+        if object_list!= object_list_prev:
+            if id != 1024:
+                cv2.imwrite('/tmp/detected_image.jpg',frame)  
+                print("Send msg")
                 os.system('/usr/local/bin/telegram-send --image /tmp/detected_image.jpg --caption "' + info + '"')
                 info=""
                 object_list_prev=object_list
+                id=1024
 
         t2 = cv2.getTickCount()
         time1 = (t2-t1)/freq
@@ -202,7 +203,7 @@ if camera_type == 'picamera':
 
         # Press 'q' to quit
         #if cv2.waitKey(1) == ord('q'):
-        #    break
+            #break
 
         rawCapture.truncate(0)
 
@@ -238,7 +239,7 @@ elif camera_type == 'usb':
             np.squeeze(scores),
             category_index,
             use_normalized_coordinates=True,
-            line_thickness=8,
+            line_thickness=2,
             min_score_thresh=MIN_SCORE_THRESH)
 
         #Scan score to find detected element in categories with minimal value thresh
@@ -259,6 +260,7 @@ elif camera_type == 'usb':
                      count=count+1
                      #print(id)
                      info= info + " Category: " + str(category_index.get(id)) + " Score: "+ str(scorex)
+                     object_list=str(category_index.get(id))
 
         #Print summary of detections in thi frame
         print(info)
@@ -266,12 +268,14 @@ elif camera_type == 'usb':
 
         # All the results have been drawn on the frame, so it's time to display it.
         #cv2.imshow('Object detector', frame)
-        if id != 1024:
-            cv2.imwrite('/tmp/detected_image.jpg',frame)  
-            id=1024
-            #print( "cat: " + str(categories[id-1]['name']) + " score: "+ str(scorex))
-            os.system('/usr/local/bin/telegram-send --image /tmp/detected_image.jpg --caption "' + info + '"')
-            info=""
+        if object_list!= object_list_prev:
+            if id != 1024:
+                cv2.imwrite('/tmp/detected_image.jpg',frame)  
+                print("Send msg")
+                os.system('/usr/local/bin/telegram-send --image /tmp/detected_image.jpg --caption "' + info + '"')
+                info=""
+                object_list_prev=object_list
+                id=1024
 
         t2 = cv2.getTickCount()
         time1 = (t2-t1)/freq
@@ -280,7 +284,6 @@ elif camera_type == 'usb':
         # Press 'q' to quit
         #if cv2.waitKey(1) == ord('q'):
         #    break
-
 
     camera.release()
 
